@@ -3,15 +3,15 @@ import { drizzle, BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import * as schema from "./schema";
 import chalk from "chalk";
 
-export interface Task<T = unknown> {
-    name: string;
+export interface Task<TId extends string = string, T = unknown> {
+    id: TId;
     execute(stefan: Stefan<any>): Promise<T> | T;
     optional?: boolean;
 }
 
 const sqlSchema = await Bun.file("./schema.sql").text();
 
-class Stefan<TReturn = void> {
+class Stefan<TReturn = Record<string, any>> {
     public readonly sqlite: Database;
     public readonly db: BunSQLiteDatabase<typeof schema>;
     private tasks: Task[] = [];
@@ -30,10 +30,10 @@ class Stefan<TReturn = void> {
         this.db = drizzle(this.sqlite, { schema });
     }
 
-    withTasks<TTasks extends Task<any>[]>(
-        tasks: [...TTasks],
-    ): Stefan<TTasks extends [...any[], Task<infer R>] ? R : TTasks extends Task<infer R>[] ? R : unknown> {
-        this.tasks = tasks;
+    withTasks<const TTasks extends readonly Task<any, any>[]>(
+        tasks: TTasks,
+    ): Stefan<{ [K in TTasks[number] as K["id"]]: Awaited<ReturnType<K["execute"]>> }> {
+        this.tasks = tasks as any;
 
         return this as any;
     }
@@ -41,7 +41,7 @@ class Stefan<TReturn = void> {
     private getTaskName(index: number) {
         return (
             chalk.blue("[ ") +
-            chalk.bold(chalk.green(this.tasks[index].name)) +
+            chalk.bold(chalk.green(this.tasks[index].id)) +
             chalk.blue(",") +
             chalk.bold(chalk.yellow(` #${index + 1} `)) +
             chalk.blue("]")
@@ -63,7 +63,7 @@ class Stefan<TReturn = void> {
 
     async run(): Promise<TReturn> {
         const pipelineStart = performance.now();
-        let lastResult: any;
+        const results: Record<string, any> = {};
 
         for (let i = 0; i < this.tasks.length; i++) {
             const task = this.tasks[i];
@@ -72,7 +72,10 @@ class Stefan<TReturn = void> {
             console.log(`${this.getTaskName(i)} 🚀  Running`);
 
             try {
-                lastResult = await task.execute(this);
+                const result = await task.execute(this);
+                if (result !== undefined) {
+                    results[task.id] = result;
+                }
 
                 const taskEnd = performance.now();
                 console.log(
@@ -92,7 +95,7 @@ class Stefan<TReturn = void> {
             `\n⭐  ${chalk.green("All tasks completed")} in ${this.getTimeString(pipelineEnd - pipelineStart)}!`,
         );
 
-        return lastResult;
+        return results as any;
     }
 }
 

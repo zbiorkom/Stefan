@@ -168,9 +168,9 @@ const gtfsMapping: Record<string, FileDef> = {
     },
 };
 
-export default (buffer: Buffer): Task => {
+export default (buffer: Buffer) => {
     return {
-        name: "Import GTFS",
+        id: "import_gtfs",
         execute: async ({ sqlite }) => {
             sqlite.run("PRAGMA foreign_keys = OFF;");
 
@@ -265,5 +265,5 @@ export default (buffer: Buffer): Task => {
 
             sqlite.run("PRAGMA foreign_keys = ON;");
         },
-    };
+    } satisfies Task;
 };
