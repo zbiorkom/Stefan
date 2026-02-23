@@ -5,7 +5,7 @@ const MS_DAY = 24 * 60 * 60 * 1000;
 
 export default (backwardDays: number = -1, forwardDays: number = 7) => {
     return {
-        id: "getActiveServices",
+        id: "get_active_services",
         execute: async ({ db }) => {
             const activeServices = new Map<string, number[]>();
 
