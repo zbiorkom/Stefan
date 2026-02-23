@@ -27,8 +27,7 @@ CREATE TABLE `calendar_dates` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`service_id` text NOT NULL,
 	`date` text NOT NULL,
-	`exception_type` integer NOT NULL,
-	FOREIGN KEY (`service_id`) REFERENCES `calendar`(`service_id`) ON UPDATE no action ON DELETE cascade
+	`exception_type` integer NOT NULL
 );
 --> statement-breakpoint
 CREATE INDEX `cd_service_idx` ON `calendar_dates` (`service_id`);--> statement-breakpoint

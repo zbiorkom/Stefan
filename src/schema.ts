@@ -145,9 +145,7 @@ export const calendarDates = sqliteTable(
     "calendar_dates",
     {
         id: integer().primaryKey({ autoIncrement: true }),
-        service_id: text()
-            .notNull()
-            .references(() => calendar.service_id, { onDelete: "cascade" }),
+        service_id: text().notNull(),
         date: text().notNull(), // "YYYYMMDD"
         exception_type: integer().$type<ExceptionType>().notNull(),
     },
