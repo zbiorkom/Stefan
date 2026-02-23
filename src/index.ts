@@ -3,15 +3,15 @@ import { drizzle, BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import * as schema from "./schema";
 import chalk from "chalk";
 
-export interface Task {
+export interface Task<T = unknown> {
     name: string;
-    execute(stefan: Stefan): Promise<void> | void;
+    execute(stefan: Stefan<any>): Promise<T> | T;
     optional?: boolean;
 }
 
 const sqlSchema = await Bun.file("./schema.sql").text();
 
-class Stefan {
+class Stefan<TReturn = void> {
     public readonly sqlite: Database;
     public readonly db: BunSQLiteDatabase<typeof schema>;
     private tasks: Task[] = [];
@@ -29,10 +29,20 @@ class Stefan {
         this.db = drizzle(this.sqlite, { schema });
     }
 
-    withTasks(tasks: Task[]) {
-        this.tasks = tasks;
+    withTasks<TTasks extends (Task<any> | Task<any>[])[]>(
+        tasks: [...TTasks],
+    ): Stefan<
+        TTasks extends [...any[], Task<infer R>]
+            ? R
+            : TTasks extends [...any[], Task<infer R>[]]
+              ? R
+              : TTasks extends Task<infer R>[]
+                ? R
+                : unknown
+    > {
+        this.tasks = tasks.flat();
 
-        return this;
+        return this as any;
     }
 
     private getTaskName(index: number) {
@@ -58,8 +68,9 @@ class Stefan {
         return chalk.bold(chalk.yellow(result));
     }
 
-    async run() {
+    async run(): Promise<TReturn> {
         const pipelineStart = performance.now();
+        let lastResult: any;
 
         for (let i = 0; i < this.tasks.length; i++) {
             const task = this.tasks[i];
@@ -68,7 +79,7 @@ class Stefan {
             console.log(`${this.getTaskName(i)} 🚀  Running`);
 
             try {
-                await task.execute(this);
+                lastResult = await task.execute(this);
 
                 const taskEnd = performance.now();
                 console.log(
@@ -87,6 +98,8 @@ class Stefan {
         console.log(
             `\n⭐  ${chalk.green("All tasks completed")} in ${this.getTimeString(pipelineEnd - pipelineStart)}!`,
         );
+
+        return lastResult;
     }
 }
 
