@@ -20,27 +20,20 @@ class Stefan<TReturn = void> {
         this.sqlite = new Database(":memory:");
 
         this.sqlite.run("PRAGMA journal_mode = WAL;");
-        this.sqlite.run("PRAGMA synchronous = NORMAL;");
+        this.sqlite.run("PRAGMA synchronous = off;");
         this.sqlite.run("PRAGMA temp_store = MEMORY;");
         this.sqlite.run("PRAGMA mmap_size = 600000000;");
         this.sqlite.run("PRAGMA foreign_keys = ON;");
+        this.sqlite.run("PRAGMA cache_size = -128000;");
         this.sqlite.run(sqlSchema);
 
         this.db = drizzle(this.sqlite, { schema });
     }
 
-    withTasks<TTasks extends (Task<any> | Task<any>[])[]>(
+    withTasks<TTasks extends Task<any>[]>(
         tasks: [...TTasks],
-    ): Stefan<
-        TTasks extends [...any[], Task<infer R>]
-            ? R
-            : TTasks extends [...any[], Task<infer R>[]]
-              ? R
-              : TTasks extends Task<infer R>[]
-                ? R
-                : unknown
-    > {
-        this.tasks = tasks.flat();
+    ): Stefan<TTasks extends [...any[], Task<infer R>] ? R : TTasks extends Task<infer R>[] ? R : unknown> {
+        this.tasks = tasks;
 
         return this as any;
     }
