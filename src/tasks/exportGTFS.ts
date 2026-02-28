@@ -4,12 +4,16 @@ import yazl from "yazl";
 import { createWriteStream, renameSync } from "fs";
 import { gtfsConfig } from "../gtfsConfig";
 import { sql } from "drizzle-orm";
+import { Readable } from "stream";
 
 export default (outputZipPath: string) => {
     return {
         id: "export_gtfs",
         execute: async ({ sqlite, db }) => {
             const zipfile = new yazl.ZipFile();
+            const writeStream = createWriteStream(outputZipPath + ".tmp");
+
+            zipfile.outputStream.pipe(writeStream);
 
             for (const config of gtfsConfig) {
                 const [{ count }] = await db.select({ count: sql<number>`COUNT(*)` }).from(config.table);
@@ -26,35 +30,43 @@ export default (outputZipPath: string) => {
                 });
 
                 const query = sqlite.query(`SELECT ${fields.join(", ")} FROM ${config.tableName}`);
+                const iterator = query.iterate();
 
-                for (const row of query.iterate() as any) {
-                    const formattedRow: Record<string, any> = {};
+                const rowStream = new Readable({
+                    objectMode: true,
+                    read() {
+                        let pushing = true;
 
-                    for (const field of fields) {
-                        let val = row[field];
+                        while (pushing) {
+                            const result = iterator.next();
+                            if (result.done) return this.push(null);
 
-                        const outputFormatter = config.fields[field]?.output;
-                        if (val !== null && val !== undefined && outputFormatter) {
-                            val = outputFormatter(val);
+                            const row = result.value as any;
+                            const formattedRow: Record<string, any> = {};
+
+                            for (const field of fields) {
+                                let val = row[field];
+
+                                const outputFormatter = config.fields[field]?.output;
+                                if (val !== null && val !== undefined && outputFormatter) {
+                                    val = outputFormatter(val);
+                                }
+
+                                formattedRow[field] = val;
+                            }
+
+                            pushing = this.push(formattedRow);
                         }
+                    },
+                });
 
-                        formattedRow[field] = val;
-                    }
-
-                    stringifier.write(formattedRow);
-                }
-
-                stringifier.end();
-
+                rowStream.pipe(stringifier);
                 zipfile.addReadStream(stringifier, config.fileName);
             }
 
             await new Promise<void>((resolve, reject) => {
-                zipfile.outputStream
-                    .pipe(createWriteStream(outputZipPath + ".tmp"))
-                    .on("close", () => resolve())
-                    .on("error", reject);
-
+                writeStream.on("close", resolve);
+                writeStream.on("error", reject);
                 zipfile.end();
             });
 
