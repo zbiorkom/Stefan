@@ -18,7 +18,7 @@ export interface FileDef {
     fields: Record<string, ColumnDef>;
 }
 
-export const toNumber = (v: string) => (Number.isNaN(+v) ? null : +v);
+export const toNumber = (v: string) => (!v || Number.isNaN(+v) ? null : +v);
 
 export const toTimeSeconds = (v: string) => {
     let totalSeconds = 0;
