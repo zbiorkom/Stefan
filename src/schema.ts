@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real, index, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, index, uniqueIndex, primaryKey } from "drizzle-orm/sqlite-core";
 
 export enum LocationType {
     Stop = 0,
@@ -144,14 +144,13 @@ export const calendar = sqliteTable("calendar", {
 export const calendarDates = sqliteTable(
     "calendar_dates",
     {
-        id: integer().primaryKey({ autoIncrement: true }),
         service_id: text().notNull(),
         date: text().notNull(), // "YYYYMMDD"
         exception_type: integer().$type<ExceptionType>().notNull(),
     },
     (table) => [
+        primaryKey({ columns: [table.service_id, table.date] }),
         index("cd_service_idx").on(table.service_id),
-        uniqueIndex("cd_service_date_idx").on(table.service_id, table.date),
     ],
 );
 
@@ -225,7 +224,6 @@ export const stopTimes = sqliteTable(
 export const frequencies = sqliteTable(
     "frequencies",
     {
-        id: integer().primaryKey({ autoIncrement: true }),
         trip_id: text()
             .notNull()
             .references(() => trips.trip_id, { onDelete: "cascade" }),
@@ -234,13 +232,15 @@ export const frequencies = sqliteTable(
         headway_secs: integer().notNull(),
         exact_times: integer().$type<ExactTimes>().default(ExactTimes.FrequencyBased),
     },
-    (table) => [index("freq_trip_idx").on(table.trip_id)],
+    (table) => [
+        primaryKey({ columns: [table.trip_id, table.start_time] }),
+        index("freq_trip_idx").on(table.trip_id),
+    ],
 );
 
 export const transfers = sqliteTable(
     "transfers",
     {
-        id: integer().primaryKey({ autoIncrement: true }),
         from_stop_id: text()
             .notNull()
             .references(() => stops.stop_id, { onDelete: "cascade" }),
@@ -250,5 +250,9 @@ export const transfers = sqliteTable(
         transfer_type: integer().$type<TransferType>().notNull(),
         min_transfer_time: integer(),
     },
-    (table) => [index("tr_from_idx").on(table.from_stop_id), index("tr_to_idx").on(table.to_stop_id)],
+    (table) => [
+        primaryKey({ columns: [table.from_stop_id, table.to_stop_id] }),
+        index("tr_from_idx").on(table.from_stop_id),
+        index("tr_to_idx").on(table.to_stop_id),
+    ],
 );

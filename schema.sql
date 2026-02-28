@@ -24,21 +24,20 @@ CREATE TABLE `calendar` (
 );
 --> statement-breakpoint
 CREATE TABLE `calendar_dates` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`service_id` text NOT NULL,
 	`date` text NOT NULL,
-	`exception_type` integer NOT NULL
+	`exception_type` integer NOT NULL,
+	PRIMARY KEY(`service_id`, `date`)
 );
 --> statement-breakpoint
 CREATE INDEX `cd_service_idx` ON `calendar_dates` (`service_id`);--> statement-breakpoint
-CREATE UNIQUE INDEX `cd_service_date_idx` ON `calendar_dates` (`service_id`,`date`);--> statement-breakpoint
 CREATE TABLE `frequencies` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`trip_id` text NOT NULL,
 	`start_time` text NOT NULL,
 	`end_time` text NOT NULL,
 	`headway_secs` integer NOT NULL,
 	`exact_times` integer DEFAULT 0,
+	PRIMARY KEY(`trip_id`, `start_time`),
 	FOREIGN KEY (`trip_id`) REFERENCES `trips`(`trip_id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -106,11 +105,11 @@ CREATE TABLE `stops` (
 CREATE INDEX `stops_parent_station_idx` ON `stops` (`parent_station`);--> statement-breakpoint
 CREATE INDEX `stops_zone_idx` ON `stops` (`zone_id`);--> statement-breakpoint
 CREATE TABLE `transfers` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`from_stop_id` text NOT NULL,
 	`to_stop_id` text NOT NULL,
 	`transfer_type` integer NOT NULL,
 	`min_transfer_time` integer,
+	PRIMARY KEY(`from_stop_id`, `to_stop_id`),
 	FOREIGN KEY (`from_stop_id`) REFERENCES `stops`(`stop_id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`to_stop_id`) REFERENCES `stops`(`stop_id`) ON UPDATE no action ON DELETE cascade
 );
