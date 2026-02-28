@@ -37,6 +37,12 @@ export default () => {
             `);
 
             sqlite.run(`
+                UPDATE frequencies
+                SET trip_id = (SELECT new_trip_id FROM trip_id_mapping WHERE old_trip_id = frequencies.trip_id)
+                WHERE trip_id IN (SELECT old_trip_id FROM trip_id_mapping)
+            `);
+
+            sqlite.run(`
                 UPDATE trips
                 SET trip_id = (SELECT new_trip_id FROM trip_id_mapping WHERE old_trip_id = trips.trip_id)
                 WHERE trip_id IN (SELECT old_trip_id FROM trip_id_mapping)
