@@ -9,6 +9,10 @@ export interface Task<TId extends string = string, T = unknown> {
     optional?: boolean;
 }
 
+export interface StefanOptions {
+    agency?: string;
+}
+
 const sqlSchema = await Bun.file("./schema.sql").text();
 
 class Stefan<TReturn = Record<string, any>> {
@@ -16,7 +20,7 @@ class Stefan<TReturn = Record<string, any>> {
     public readonly db: BunSQLiteDatabase<typeof schema>;
     private tasks: Task[] = [];
 
-    constructor() {
+    constructor(public readonly options: StefanOptions = {}) {
         this.sqlite = new Database(":memory:");
 
         this.sqlite.run("PRAGMA journal_mode = WAL;");
@@ -52,8 +56,7 @@ class Stefan<TReturn = Record<string, any>> {
         let result = "";
 
         if (milliseconds >= 1000) {
-            const seconds = (milliseconds / 1000).toFixed(2);
-            result += `${seconds}s`;
+            result += `${(milliseconds / 1000).toFixed(2)}s`;
         } else {
             result += `${milliseconds.toFixed(2)}ms`;
         }
