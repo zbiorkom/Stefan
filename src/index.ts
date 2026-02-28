@@ -104,3 +104,5 @@ class Stefan<TReturn = Record<string, any>> {
 
 export default Stefan;
 export * from "./schema";
+export { runAll } from "./runAll";
+export { default as tasks } from "./tasks";

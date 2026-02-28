@@ -20,7 +20,6 @@ export default ({ locationPrecision = 6, nameMatchThresholdMeters = 20 }: Option
                 FROM stops s1
                 JOIN stops s2 ON s1.stop_id < s2.stop_id
                 WHERE 
-                    -- WARUNEK 1: Identyczna lokalizacja (hard match)
                     (
                         ROUND(s1.stop_lat, ${locationPrecision}) = ROUND(s2.stop_lat, ${locationPrecision}) 
                         AND 
