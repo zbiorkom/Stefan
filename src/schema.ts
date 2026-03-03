@@ -81,6 +81,8 @@ export const agency = sqliteTable("agency", {
     extra_fields_json: text({ mode: "json" }),
 });
 
+export type TAgency = typeof agency.$inferSelect;
+
 export const stops = sqliteTable(
     "stops",
     {
@@ -108,6 +110,8 @@ export const stops = sqliteTable(
     ],
 );
 
+export type TStop = typeof stops.$inferSelect;
+
 export const routes = sqliteTable(
     "routes",
     {
@@ -128,6 +132,8 @@ export const routes = sqliteTable(
     (table) => [index("routes_agency_idx").on(table.agency_id)],
 );
 
+export type TRoute = typeof routes.$inferSelect;
+
 export const calendar = sqliteTable("calendar", {
     service_id: text().primaryKey(),
     monday: integer().$type<CalendarAvailability>().notNull(),
@@ -141,6 +147,8 @@ export const calendar = sqliteTable("calendar", {
     end_date: text().notNull(), // "YYYYMMDD"
 });
 
+export type TCalendar = typeof calendar.$inferSelect;
+
 export const calendarDates = sqliteTable(
     "calendar_dates",
     {
@@ -153,6 +161,8 @@ export const calendarDates = sqliteTable(
         index("cd_service_idx").on(table.service_id),
     ],
 );
+
+export type TCalendarDate = typeof calendarDates.$inferSelect;
 
 export const shapes = sqliteTable(
     "shapes",
@@ -168,6 +178,8 @@ export const shapes = sqliteTable(
         uniqueIndex("shapes_pk").on(table.shape_id, table.shape_pt_sequence),
     ],
 );
+
+export type TShape = typeof shapes.$inferSelect;
 
 export const trips = sqliteTable(
     "trips",
@@ -198,6 +210,8 @@ export const trips = sqliteTable(
     ],
 );
 
+export type TTrip = typeof trips.$inferSelect;
+
 export const stopTimes = sqliteTable(
     "stop_times",
     {
@@ -221,6 +235,8 @@ export const stopTimes = sqliteTable(
     ],
 );
 
+export type TStopTime = typeof stopTimes.$inferSelect;
+
 export const frequencies = sqliteTable(
     "frequencies",
     {
@@ -237,6 +253,8 @@ export const frequencies = sqliteTable(
         index("freq_trip_idx").on(table.trip_id),
     ],
 );
+
+export type TFrequency = typeof frequencies.$inferSelect;
 
 export const transfers = sqliteTable(
     "transfers",
@@ -256,3 +274,5 @@ export const transfers = sqliteTable(
         index("tr_to_idx").on(table.to_stop_id),
     ],
 );
+
+export type TTransfer = typeof transfers.$inferSelect;

@@ -1,18 +1,27 @@
-import type { Task } from "..";
+import type { TAgency, Task, TRoute, TStop, TTrip } from "..";
 import yauzl from "yauzl";
 import csv from "csv-parser";
 import { gtfsConfig } from "../gtfsConfig";
 
+export interface ImportGTFSOptions {
+    buffer: Buffer;
+    disableEscapeQuotes?: boolean;
+    transformAgency?: (agency: TAgency) => TAgency | null;
+    transformStop?: (stop: TStop) => TStop | null;
+    transformRoute?: (route: TRoute) => TRoute | null;
+    transformTrip?: (trip: TTrip) => TTrip | null;
+}
+
 const gtfsMapping = Object.fromEntries(gtfsConfig.map((c) => [c.fileName, c]));
 
-export default (buffer: Buffer) => {
+export default (options: ImportGTFSOptions) => {
     return {
         id: "import_gtfs",
         execute: async ({ sqlite }) => {
             sqlite.run("PRAGMA foreign_keys = OFF;");
 
             await new Promise((resolve, reject) => {
-                yauzl.fromBuffer(buffer, { lazyEntries: true }, (err, zipfile) => {
+                yauzl.fromBuffer(options.buffer, { lazyEntries: true }, (err, zipfile) => {
                     if (err) return reject(err);
 
                     zipfile.readEntry();
@@ -26,7 +35,8 @@ export default (buffer: Buffer) => {
                         zipfile.openReadStream(entry, async (err, readStream) => {
                             if (err) return reject(err);
 
-                            const parser = csv();
+                            const parser = csv({ quote: options.disableEscapeQuotes ? "\0" : '"' });
+
                             readStream.pipe(parser);
 
                             const chunkSize = 50000;
@@ -38,33 +48,51 @@ export default (buffer: Buffer) => {
                                 }
                             });
 
-                            const namedPlaceholders = Object.keys(config.fields)
-                                .map((k) => `@${k}`)
-                                .join(", ");
+                            const allFields = Object.keys(config.fields);
+                            if (config.supportsCustomFields) {
+                                allFields.push("extra_fields_json");
+                            }
 
+                            const namedPlaceholders = allFields.map((k) => `@${k}`).join(", ");
                             const stmt = sqlite.prepare(
-                                `INSERT OR IGNORE INTO ${config.tableName} (${Object.keys(config.fields).join(", ")}) VALUES (${namedPlaceholders})`,
+                                `INSERT OR IGNORE INTO ${config.tableName} (${allFields.join(", ")}) VALUES (${namedPlaceholders})`,
                             );
 
                             parser.on("data", async (row: Record<string, string>) => {
-                                const transformedRow: any = {};
+                                let rowObj: any = {};
                                 const customFields: Record<string, any> = {};
 
                                 for (const [key, value] of Object.entries(row)) {
                                     const field = config.fields[key];
 
                                     if (field !== undefined) {
-                                        transformedRow[`@${key}`] = field.input ? field.input(value) : value;
+                                        rowObj[key] = field.input ? field.input(value) : value;
                                     } else if (config.supportsCustomFields) {
                                         customFields[key] = value;
                                     }
                                 }
 
                                 if (config.supportsCustomFields && Object.keys(customFields).length > 0) {
-                                    transformedRow["@extra_fields_json"] = JSON.stringify(customFields);
+                                    rowObj.extra_fields_json = JSON.stringify(customFields);
                                 }
 
-                                chunk.push(transformedRow);
+                                if (config.tableName === "agency" && options.transformAgency)
+                                    rowObj = options.transformAgency(rowObj);
+                                else if (config.tableName === "stops" && options.transformStop)
+                                    rowObj = options.transformStop(rowObj);
+                                else if (config.tableName === "routes" && options.transformRoute)
+                                    rowObj = options.transformRoute(rowObj);
+                                else if (config.tableName === "trips" && options.transformTrip)
+                                    rowObj = options.transformTrip(rowObj);
+
+                                if (rowObj === null) return;
+
+                                const sqlParams: Record<string, any> = {};
+                                for (const key of allFields) {
+                                    sqlParams[`@${key}`] = rowObj[key] !== undefined ? rowObj[key] : null;
+                                }
+
+                                chunk.push(sqlParams);
 
                                 if (chunk.length >= chunkSize) {
                                     parser.pause();
