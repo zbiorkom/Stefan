@@ -2,6 +2,7 @@ import dropTripsOutsideBounds from "./dropTripsOutsideBounds";
 import dropUnusedEntities from "./dropUnusedEntities";
 import ensureCityInStopName from "./ensureCityInStopName";
 import exportGTFS from "./exportGTFS";
+import filterActiveTrips from "./filterActiveTrips";
 import fixSequences from "./fixSequences";
 import generateRouteLongNames from "./generateRouteLongNames";
 import generateStableTripIds from "./generateStableTripIds";
@@ -15,6 +16,7 @@ export default {
     dropUnusedEntities,
     ensureCityInStopName,
     exportGTFS,
+    filterActiveTrips,
     fixSequences,
     generateRouteLongNames,
     generateStableTripIds,
