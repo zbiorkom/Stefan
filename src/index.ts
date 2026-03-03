@@ -2,6 +2,7 @@ import { Database } from "bun:sqlite";
 import { drizzle, BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import * as schema from "./schema";
 import chalk from "chalk";
+import { join } from "path";
 
 export interface Task<TId extends string = string, T = unknown> {
     id: TId;
@@ -13,7 +14,7 @@ export interface StefanOptions {
     agency?: string;
 }
 
-const sqlSchema = await Bun.file("./schema.sql").text();
+const sqlSchema = await Bun.file(join(import.meta.dir, "../schema.sql")).text();
 
 class Stefan<TReturn = Record<string, any>> {
     public readonly sqlite: Database;
