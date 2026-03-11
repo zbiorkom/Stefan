@@ -4,6 +4,9 @@ export default () => {
     return {
         id: "generate_route_long_names",
         execute: async ({ sqlite }) => {
+            sqlite.run(`DROP TABLE IF EXISTS trip_bounds`);
+            sqlite.run(`DROP TABLE IF EXISTS best_pattern`);
+
             sqlite.run(`
                 CREATE TEMP TABLE trip_bounds AS
                 SELECT

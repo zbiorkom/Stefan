@@ -87,6 +87,8 @@ export default (options: ImportGTFSOptions) => {
 
                                     if (Object.keys(rowObj.extra_fields_json).length > 0) {
                                         rowObj.extra_fields_json = JSON.stringify(rowObj.extra_fields_json);
+                                    } else {
+                                        rowObj.extra_fields_json = null;
                                     }
                                 }
 
