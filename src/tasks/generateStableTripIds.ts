@@ -30,6 +30,30 @@ export default () => {
 
             sqlite.run("CREATE UNIQUE INDEX temp_idx_mapping_old_trip_id ON trip_id_mapping(old_trip_id)");
 
+            const duplicates = sqlite
+                .query<{ new_trip_id: string; old_ids: string }, []>(
+                    `SELECT new_trip_id, GROUP_CONCAT(old_trip_id) as old_ids
+                    FROM trip_id_mapping
+                    GROUP BY new_trip_id
+                    HAVING COUNT(*) > 1`,
+                )
+                .all();
+
+            if (duplicates.length > 0) {
+                for (const dup of duplicates) {
+                    console.warn(`Duplicate stable trip ID ${dup.new_trip_id} (trips: ${dup.old_ids})`);
+                }
+
+                sqlite.run(`
+                    DELETE FROM trip_id_mapping
+                    WHERE rowid NOT IN (
+                        SELECT MIN(rowid)
+                        FROM trip_id_mapping
+                        GROUP BY new_trip_id
+                    )
+                `);
+            }
+
             sqlite.run(`
                 UPDATE stop_times
                 SET trip_id = (SELECT new_trip_id FROM trip_id_mapping WHERE old_trip_id = stop_times.trip_id)

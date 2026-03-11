@@ -85,11 +85,7 @@ export default (options: ImportGTFSOptions) => {
                                         }
                                     }
 
-                                    if (Object.keys(rowObj.extra_fields_json).length > 0) {
-                                        rowObj.extra_fields_json = JSON.stringify(rowObj.extra_fields_json);
-                                    } else {
-                                        rowObj.extra_fields_json = null;
-                                    }
+                                    rowObj.extra_fields_json = JSON.stringify(rowObj.extra_fields_json);
                                 }
 
                                 const sqlParams: Record<string, any> = {};
@@ -120,10 +116,7 @@ export default (options: ImportGTFSOptions) => {
                         });
                     });
 
-                    zipfile.on("end", () => {
-                        console.log("[GTFS Import] Finished processing all files.");
-                        resolve(void 0);
-                    });
+                    zipfile.on("end", () => resolve(void 0));
 
                     zipfile.on("error", reject);
                 });
