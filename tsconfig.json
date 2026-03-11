@@ -17,9 +17,6 @@
         "noImplicitOverride": true,
         "noUnusedLocals": false,
         "noUnusedParameters": false,
-        "noPropertyAccessFromIndexSignature": false,
-        "paths": {
-            "@/*": ["./src/*"]
-        }
+        "noPropertyAccessFromIndexSignature": false
     }
 }

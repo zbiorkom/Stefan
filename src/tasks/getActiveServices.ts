@@ -1,4 +1,4 @@
-import { dateToString } from "@/util";
+import { dateToString } from "../util";
 import { calendar, calendarDates, type Task, ExceptionType, CalendarAvailability } from "..";
 
 const MS_DAY = 24 * 60 * 60 * 1000;
