@@ -27,7 +27,7 @@ export default (backwardDays: number = -1, forwardDays: number = 7) => {
                     if (!activeDays || activeDays.length === 0) {
                         deleteStmt.run({ $id: trip.trip_id });
                     } else {
-                        (trip.extra_fields_json as any).activeDays = activeDays;
+                        trip.extra_fields_json.activeDays = activeDays;
 
                         updateStmt.run({
                             $id: trip.trip_id,
