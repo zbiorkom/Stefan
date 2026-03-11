@@ -60,32 +60,37 @@ export default (options: ImportGTFSOptions) => {
 
                             parser.on("data", async (row: Record<string, string>) => {
                                 let rowObj: any = {};
-                                const customFields: Record<string, any> = {};
 
                                 for (const [key, value] of Object.entries(row)) {
                                     const field = config.fields[key];
-
-                                    if (field !== undefined) {
-                                        rowObj[key] = field.input ? field.input(value) : value;
-                                    } else if (config.supportsCustomFields) {
-                                        customFields[key] = value;
-                                    }
+                                    rowObj[key] = field?.input ? field.input(value) : value;
                                 }
 
-                                if (config.supportsCustomFields && Object.keys(customFields).length > 0) {
-                                    rowObj.extra_fields_json = JSON.stringify(customFields);
-                                }
-
-                                if (config.tableName === "agency" && options.transformAgency)
+                                if (config.tableName === "agency" && options.transformAgency) {
                                     rowObj = options.transformAgency(rowObj);
-                                else if (config.tableName === "stops" && options.transformStop)
+                                } else if (config.tableName === "stops" && options.transformStop) {
                                     rowObj = options.transformStop(rowObj);
-                                else if (config.tableName === "routes" && options.transformRoute)
+                                } else if (config.tableName === "routes" && options.transformRoute) {
                                     rowObj = options.transformRoute(rowObj);
-                                else if (config.tableName === "trips" && options.transformTrip)
+                                } else if (config.tableName === "trips" && options.transformTrip) {
                                     rowObj = options.transformTrip(rowObj);
+                                }
 
                                 if (rowObj === null) return;
+
+                                if (config.supportsCustomFields) {
+                                    const customFields: Record<string, any> = {};
+
+                                    for (const key of Object.keys(rowObj)) {
+                                        if (config.fields[key] === undefined && key !== "extra_fields_json") {
+                                            customFields[key] = rowObj[key];
+                                        }
+                                    }
+
+                                    if (Object.keys(customFields).length > 0) {
+                                        rowObj.extra_fields_json = JSON.stringify(customFields);
+                                    }
+                                }
 
                                 const sqlParams: Record<string, any> = {};
                                 for (const key of allFields) {
