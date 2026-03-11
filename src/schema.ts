@@ -78,7 +78,7 @@ export const agency = sqliteTable("agency", {
     agency_phone: text(),
     agency_fare_url: text(),
     agency_email: text(),
-    extra_fields_json: text({ mode: "json" }).$type<any>(),
+    extra_fields_json: text({ mode: "json" }).default("{}").$type<any>(),
 });
 
 export type TAgency = typeof agency.$inferSelect;
@@ -102,7 +102,7 @@ export const stops = sqliteTable(
             .default(WheelchairAccessibility.NoInformation),
         level_id: text(),
         platform_code: text(),
-        extra_fields_json: text({ mode: "json" }).$type<any>(),
+        extra_fields_json: text({ mode: "json" }).default("{}").$type<any>(),
     },
     (table) => [
         index("stops_parent_station_idx").on(table.parent_station),
@@ -127,7 +127,7 @@ export const routes = sqliteTable(
         route_color: text(),
         route_text_color: text(),
         route_sort_order: integer(),
-        extra_fields_json: text({ mode: "json" }).$type<any>(),
+        extra_fields_json: text({ mode: "json" }).default("{}").$type<any>(),
     },
     (table) => [index("routes_agency_idx").on(table.agency_id)],
 );
@@ -200,7 +200,7 @@ export const trips = sqliteTable(
             .$type<WheelchairAccessibility>()
             .default(WheelchairAccessibility.NoInformation),
         bikes_allowed: integer().$type<BikesAllowed>().default(BikesAllowed.NoInformation),
-        extra_fields_json: text({ mode: "json" }).$type<any>(),
+        extra_fields_json: text({ mode: "json" }).default("{}").$type<any>(),
     },
     (table) => [
         index("trips_route_idx").on(table.route_id),

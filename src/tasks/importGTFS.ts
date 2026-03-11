@@ -59,7 +59,7 @@ export default (options: ImportGTFSOptions) => {
                             );
 
                             parser.on("data", async (row: Record<string, string>) => {
-                                let rowObj: any = {};
+                                let rowObj: any = { extra_fields_json: {} };
 
                                 for (const [key, value] of Object.entries(row)) {
                                     const field = config.fields[key];
@@ -79,16 +79,14 @@ export default (options: ImportGTFSOptions) => {
                                 if (rowObj === null) return;
 
                                 if (config.supportsCustomFields) {
-                                    const customFields: Record<string, any> = {};
-
                                     for (const key of Object.keys(rowObj)) {
                                         if (config.fields[key] === undefined && key !== "extra_fields_json") {
-                                            customFields[key] = rowObj[key];
+                                            rowObj.extra_fields_json[key] = rowObj[key];
                                         }
                                     }
 
-                                    if (Object.keys(customFields).length > 0) {
-                                        rowObj.extra_fields_json = JSON.stringify(customFields);
+                                    if (Object.keys(rowObj.extra_fields_json).length > 0) {
+                                        rowObj.extra_fields_json = JSON.stringify(rowObj.extra_fields_json);
                                     }
                                 }
 
