@@ -1,3 +1,4 @@
+import convertFrequenciesToTrips from "./convertFrequenciesToTrips";
 import dropTripsOutsideBounds from "./dropTripsOutsideBounds";
 import dropUnusedEntities from "./dropUnusedEntities";
 import ensureCityInStopName from "./ensureCityInStopName";
@@ -12,6 +13,7 @@ import mergeRoutes from "./mergeRoutes";
 import mergeStops from "./mergeStops";
 
 export default {
+    convertFrequenciesToTrips,
     dropTripsOutsideBounds,
     dropUnusedEntities,
     ensureCityInStopName,
