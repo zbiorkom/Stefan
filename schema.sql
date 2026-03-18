@@ -7,7 +7,7 @@ CREATE TABLE `agency` (
 	`agency_phone` text,
 	`agency_fare_url` text,
 	`agency_email` text,
-	`extra_fields_json` text
+	`extra_fields_json` text DEFAULT '{}'
 );
 --> statement-breakpoint
 CREATE TABLE `calendar` (
@@ -46,14 +46,14 @@ CREATE TABLE `routes` (
 	`route_id` text PRIMARY KEY NOT NULL,
 	`agency_id` text NOT NULL,
 	`route_short_name` text NOT NULL,
-	`route_long_name` text NOT NULL,
+	`route_long_name` text,
 	`route_desc` text,
 	`route_type` integer NOT NULL,
 	`route_url` text,
 	`route_color` text,
 	`route_text_color` text,
 	`route_sort_order` integer,
-	`extra_fields_json` text,
+	`extra_fields_json` text DEFAULT '{}',
 	FOREIGN KEY (`agency_id`) REFERENCES `agency`(`agency_id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -99,7 +99,7 @@ CREATE TABLE `stops` (
 	`wheelchair_boarding` integer DEFAULT 0,
 	`level_id` text,
 	`platform_code` text,
-	`extra_fields_json` text
+	`extra_fields_json` text DEFAULT '{}'
 );
 --> statement-breakpoint
 CREATE INDEX `stops_parent_station_idx` ON `stops` (`parent_station`);--> statement-breakpoint
@@ -127,7 +127,7 @@ CREATE TABLE `trips` (
 	`shape_id` text,
 	`wheelchair_accessible` integer DEFAULT 0,
 	`bikes_allowed` integer DEFAULT 0,
-	`extra_fields_json` text,
+	`extra_fields_json` text DEFAULT '{}',
 	FOREIGN KEY (`route_id`) REFERENCES `routes`(`route_id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`service_id`) REFERENCES `calendar`(`service_id`) ON UPDATE no action ON DELETE cascade
 );
