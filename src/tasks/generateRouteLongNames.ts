@@ -31,7 +31,7 @@ export default () => {
             sqlite.run(`
                 UPDATE routes
                 SET route_long_name = (
-                    SELECT s1.stop_name || ' – ' || s2.stop_name
+                    SELECT s1.stop_name || ' — ' || s2.stop_name
                     FROM best_pattern bp
                     JOIN stops s1 ON s1.stop_id = bp.first_stop
                     JOIN stops s2 ON s2.stop_id = bp.last_stop

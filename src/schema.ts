@@ -120,7 +120,7 @@ export const routes = sqliteTable(
             .notNull()
             .references(() => agency.agency_id, { onDelete: "cascade" }),
         route_short_name: text().notNull(),
-        route_long_name: text().notNull(),
+        route_long_name: text(),
         route_desc: text(),
         route_type: integer().$type<RouteType>().notNull(),
         route_url: text(),
