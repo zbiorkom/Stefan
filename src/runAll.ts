@@ -7,7 +7,7 @@ export const runAll = async (stefansToMerge: Stefan[]): Promise<Stefan> => {
 
     for (let i = 0; i < stefansToMerge.length; i++) {
         const stefan = stefansToMerge[i];
-        const prefix = stefan.options.agency || `DATASET_${i}`;
+        const prefix = stefan.options.agency ?? `DATASET_${i}`;
 
         console.log(chalk.magenta(`\n📦 Running pipeline for dataset #${i + 1} (Agency: ${prefix})...`));
 
