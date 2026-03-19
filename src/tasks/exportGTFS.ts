@@ -22,7 +22,7 @@ export default ({ outputPath, agencyId }: Options) => {
             zipfile.outputStream.pipe(writeStream);
 
             for (const config of gtfsConfig) {
-                const filter = agencyId ? getAgencyFilter(config.tableName, agencyId) : "";
+                const filter = agencyId !== undefined ? getAgencyFilter(config.tableName, agencyId) : "";
 
                 const fields = Object.keys(config.fields);
 
